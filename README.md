@@ -6,4 +6,5 @@ The application serves as a digital reporting tool for users of the Rotary Water
 All reported data is publicly available and visualized on a real-time map in the app,
 to make environmental knowledge concrete and engaging for the community.
 
-https://varmdoskargard.se/page/vattentestväskan/
+The webb app https://vattenkollen.varmdoskargard.se
+Info on the test kit https://varmdoskargard.se/page/vattentestväskan/
