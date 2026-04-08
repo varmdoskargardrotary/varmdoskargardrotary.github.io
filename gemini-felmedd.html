@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vattenkollen Värmdö</title>
+    
+    <!-- Tailwind för styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Leaflet CSS & JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .tab-active { background-color: white; color: #1e40af; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .error-ring { border: 2px solid #ef4444 !important; background-color: #fef2f2; }
+        .ph-error { border: 2px solid #ef4444 !important; padding: 0.75rem; border-radius: 1rem; background-color: #fef2f2; }
+        #map-report { height: 350px; border-radius: 1rem; z-index: 1; border: 1px solid #e2e8f0; }
+        #map-explore { width: 100%; aspect-ratio: 1 / 1; border-radius: 1rem; z-index: 1; border: 1px solid #e2e8f0; }
+        input[type=range] { -webkit-appearance: none; background: transparent; width: 100%; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 24px; width: 24px; border-radius: 50%; background: white; border: 2px solid #334155; cursor: pointer; margin-top: -10px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 6px; cursor: pointer; border-radius: 3px; }
+        .success-overlay { animation: fadeIn 0.3s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 pb-20">
+
+    <div id="app" class="max-w-3xl mx-auto min-h-screen flex flex-col">
+        <header class="bg-[#1e40af] text-white p-4 shadow-md flex justify-between items-center sticky top-0 z-50">
+            <div>
+                <h1 class="text-xl font-bold flex items-center gap-2">
+                    <i data-lucide="droplets" class="text-blue-300"></i>
+                    Vattenkollen Värmdö
+                </h1>
+                <p class="text-[10px] tracking-widest uppercase opacity-80 font-bold">Fältstudier med Rotarys Vattentestväska</p>
+            </div>
+            <div id="connection-status" class="w-3 h-3 bg-slate-400 rounded-full"></div>
+        </header>
+        
+        <nav class="px-4 mt-6">
+            <div class="bg-slate-200 p-1 rounded-xl flex gap-1 shadow-sm">
+                <button id="btn-rapportera" class="flex-1 py-2.5 rounded-lg font-bold transition-all tab-active text-sm">Rapportera</button>
+                <button id="btn-utforska" class="flex-1 py-2.5 rounded-lg font-bold transition-all text-slate-600 text-sm">Utforska alla testresultat</button>
+            </div>
+        </nav>
+
+        <main class="flex-grow px-4 mt-6">
+            <div id="view-rapportera" class="space-y-6 pb-12">
+                <!-- Sektion 1: Bakgrund -->
+                <section class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                    <div class="flex justify-between items-start mb-4">
+                        <h2 class="text-lg font-bold flex items-center gap-2">📍 1. Bakgrund</h2>
+                        <div class="text-right">
+                            <label class="text-[10px] uppercase font-bold text-blue-600 block mb-1">Rapportörskod</label>
+                            <input id="form-kod" type="text" placeholder="" class="w-24 p-1.5 text-center text-sm border border-blue-200 rounded bg-blue-50 font-mono outline-none">
+                            <div id="kod-status" class="text-[10px] font-bold mt-1 h-3"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <select id="form-skola" class="w-full p-2 border border-slate-200 rounded-md outline-none focus:ring-1 focus:ring-blue-500">
+                            <option value="">-- välj rapportör --</option>
+                            <option value="Hemmestaskolan">Hemmestaskolan</option>
+                            <option value="Kyrkskolan">Kyrkskolan</option>
+                            <option value="Lemshaga">Lemshaga akademi</option>
+                            <option value="Rotaryklubben">Rotaryklubben</option>
+                            <option value="Sjöscouterna">Sjöscouterna</option>
+                        </select>
+                        <input id="form-klass" placeholder="Klass eller grupp" class="w-full p-2 border border-slate-200 rounded-md outline-none">
+                    </div>
+                    
+                    <input id="form-plats" placeholder="Testplatsens namn" class="w-full p-2 border border-slate-200 rounded-md outline-none mb-4">
+                    <p class="text-xs font-bold text-slate-500 mb-2">Markera testplats på kartan</p>
+                    <div id="map-report" class="mb-4"></div>
+                    <div class="flex gap-2 items-center">
+                        <div id="coord-display" class="flex-1 bg-slate-50 p-2 rounded border border-slate-200 text-xs font-mono text-slate-500">59.3293, 18.3869</div>
+                        <button id="btn-gps" class="bg-blue-600 text-white px-4 py-2 rounded text-xs font-bold hover:bg-blue-700 transition-colors">GPS</button>
+                    </div>
+                </section>
+
+                <!-- Sektion 2: Vattenanalys -->
+                <section id="section-analysis" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 transition-all">
+                    <h2 class="text-lg font-bold flex items-center gap-2 mb-6">🧪 2. Vattenanalys</h2>
+                    <div class="grid grid-cols-2 gap-6 mb-8">
+                        <div>
+                            <label class="text-[10px] uppercase font-bold text-slate-400 block mb-1">Vattentemp (°C)</label>
+                            <input id="form-temp" type="number" step="0.1" class="w-full p-2 border border-slate-200 rounded-md outline-none" placeholder="0">
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-bold text-slate-400 block mb-1">SIKTDJUP (m)</label>
+                            <input id="form-siktdjup" type="number" step="0.1" class="w-full p-2 border border-slate-200 rounded-md outline-none" placeholder="0,0">
+                        </div>
+                        <div>
+                            <label class="text-[10px] uppercase font-bold text-slate-400 block mb-1">Grumlighet (1-50)</label>
+                            <input id="form-grumlighet" type="number" class="w-full p-2 border border-slate-200 rounded-md outline-none" placeholder="0">
+                        </div>
+                        <div>
+                            <label class="text-[10px] uppercase font-bold text-slate-400 block mb-1">Syrehalt (%)</label>
+                            <input id="form-syrehalt" type="number" class="w-full p-2 border border-slate-200 rounded-md outline-none" placeholder="0">
+                        </div>
+                    </div>
+                    <div id="ph-container" class="mb-10 transition-all">
+                        <div class="flex justify-between items-center mb-2">
+                            <label class="text-[10px] font-bold text-slate-400 tracking-wider">SURHET (pH)</label>
+                            <span id="ph-val" class="bg-blue-600 text-white text-[11px] px-2.5 py-0.5 rounded-full font-bold">0,0</span>
+                        </div>
+                        <div class="relative h-2 rounded-full bg-gradient-to-r from-red-500 via-yellow-400 via-green-500 via-blue-500 to-purple-600 flex items-center">
+                            <input id="form-ph" type="range" min="0" max="14" step="0.1" value="0" class="w-full relative z-10">
+                        </div>
+                    </div>
+                    <div class="bg-blue-50/50 p-5 rounded-xl border border-blue-100 mb-8 space-y-4">
+                        <h3 class="text-[10px] font-bold text-blue-800 uppercase tracking-widest">Näringsämnen & Bakterier</h3>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="text-[9px] font-bold text-blue-700 block mb-1">Kväve (ppm)</label>
+                                <input id="form-kvave" type="number" step="0.1" class="w-full p-2 border border-slate-200 rounded-md outline-none" placeholder="0">
+                            </div>
+                            <div>
+                                <label class="text-[9px] font-bold text-blue-700 block mb-1">Fosfor (ppm)</label>
+                                <input id="form-fosfor" type="number" step="0.1" class="w-full p-2 border border-slate-200 rounded-md outline-none" placeholder="0">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="text-[9px] font-bold text-blue-700 block mb-1">Kolibakterier (E. coli)</label>
+                            <select id="form-ecoli" class="w-full p-2 border border-slate-200 rounded-md outline-none">
+                                <option value="välj">-- Välj --</option>
+                                <option value="Ej testat">Ej testat</option>
+                                <option value="Inga detekterade">Inga detekterade</option>
+                                <option value="Låga halter">Låga halter</option>
+                                <option value="Höga halter (Varning)">Höga halter (Varning)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-8 text-center">
+                        <div>
+                            <label class="text-[9px] font-bold text-slate-400 uppercase block mb-2">Finns blågröna Alger?</label>
+                            <div id="alger-group" class="flex rounded-lg overflow-hidden border border-slate-200 bg-slate-100">
+                                <button data-val="Nej" class="flex-1 py-2 text-sm font-bold text-slate-400">Nej</button>
+                                <button data-val="Ja" class="flex-1 py-2 text-sm font-bold text-slate-400">Ja</button>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="text-[9px] font-bold text-slate-400 uppercase block mb-2">Bedömd helhetsstatus</label>
+                            <div id="status-group" class="flex rounded-lg overflow-hidden border border-slate-200 bg-slate-100">
+                                <button data-val="Friskt" class="flex-1 py-2 text-sm font-bold text-slate-400">Friskt</button>
+                                <button data-val="Dåligt" class="flex-1 py-2 text-sm font-bold text-slate-400">Dåligt</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Sektion 3: Observationer -->
+                <section class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                    <h2 class="text-lg font-bold flex items-center gap-2 mb-4">📝 3. Observationer</h2>
+                    <textarea id="form-obs" placeholder="Egna observationer (djur, växter, skräp, lukt)..." class="w-full p-4 border border-slate-200 rounded-xl bg-slate-50 min-h-[100px] mb-4 outline-none"></textarea>
+                    <label class="text-[10px] font-bold text-slate-400 uppercase block mb-2">Vad tyckte ni om vattentestväskan?</label>
+                    <select id="form-feedback" class="w-full p-2 border border-slate-200 rounded-md outline-none mb-6">
+                        <option value="">-- välj --</option>
+                        <option value="Jättebra">Jättebra!</option>
+                        <option value="Bra">Helt okej</option>
+                        <option value="Svårt">Lite svårt att förstå</option>
+                    </select>
+
+                    <!-- TIPS/FELMEDDELANDE VID MISSADE FÄLT -->
+                    <div id="form-error-msg" class="hidden mb-4 p-3 bg-red-50 border border-red-200 rounded-xl flex items-center gap-3 text-red-600">
+                        <i data-lucide="alert-circle" class="w-5 h-5 flex-shrink-0"></i>
+                        <p class="text-sm font-semibold">Vissa obligatoriska fält saknas. Se de rödmarkerade fälten ovan.</p>
+                    </div>
+
+                    <button id="btn-submit" class="w-full py-4 bg-[#1e40af] text-white rounded-xl font-bold text-lg shadow-lg hover:bg-blue-800 transition-colors flex items-center justify-center gap-2">
+                        Skicka in rapport
+                    </button>
+                </section>
+            </div>
+
+            <div id="view-utforska" class="hidden space-y-6 pb-12">
+                <section class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+                    <div id="map-explore" class="w-full"></div>
+                </section>
+                <div id="stats-panel" class="grid grid-cols-2 gap-4">
+                    <div class="bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
+                        <p class="text-[10px] uppercase font-bold text-slate-400">Antal tester</p>
+                        <p id="stat-count" class="text-2xl font-black text-blue-600">0</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl border border-slate-100 shadow-sm flex items-end">
+                        <button onclick="downloadCSV()" class="text-[10px] font-bold text-blue-800 flex items-center gap-1 hover:underline">
+                            <i data-lucide="download" class="w-3 h-3"></i> EXPORTERA ALL DATA (.csv)
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Success Modal -->
+        <div id="success-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-sm success-overlay">
+            <div class="bg-white rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl">
+                <div class="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <i data-lucide="check" class="w-10 h-10"></i>
+                </div>
+                <h3 class="text-2xl font-black mb-2">Rapport mottagen!</h3>
+                <div id="success-summary" class="text-slate-500 text-sm leading-relaxed mb-8"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, doc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = JSON.parse(__firebase_config);
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'vatten-varmdo';
+
+        let reportMap, exploreMap;
+        let reportMarker;
+        let exploreMarkers = [];
+        let testResults = [];
+        let selectedAlger = null;
+        let selectedStatus = null;
+        let user = null;
+
+        async function init() {
+            lucide.createIcons();
+            
+            // Vänta på att autentiseringen är klar innan vi gör något med Firestore
+            onAuthStateChanged(auth, (u) => {
+                if (u) {
+                    user = u;
+                    document.getElementById('connection-status').classList.replace('bg-slate-400', 'bg-green-500');
+                    listenToData();
+                } else {
+                    // Om vi inte är inloggade, försök logga in anonymt
+                    signInAnonymously(auth).catch(err => console.error("Auth error:", err));
+                }
+            });
+
+            initMaps();
+            setupEventListeners();
+        }
+
+        function initMaps() {
+            const startPos = [59.3293, 18.3869];
+            
+            // Map 1: Rapportera
+            reportMap = L.map('map-report', { zoomControl: false }).setView(startPos, 11);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(reportMap);
+            
+            reportMarker = L.marker(startPos, { draggable: true }).addTo(reportMap);
+            reportMarker.on('moveend', (e) => {
+                const pos = e.target.getLatLng();
+                document.getElementById('coord-display').innerText = `${pos.lat.toFixed(4)}, ${pos.lng.toFixed(4)}`;
+            });
+
+            // Map 2: Utforska
+            exploreMap = L.map('map-explore', { zoomControl: false }).setView(startPos, 10);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(exploreMap);
+        }
+
+        function listenToData() {
+            if (!user) return;
+            const q = collection(db, 'artifacts', appId, 'public', 'data', 'tester');
+            onSnapshot(q, (snapshot) => {
+                testResults = [];
+                exploreMarkers.forEach(m => exploreMap.removeLayer(m));
+                exploreMarkers = [];
+                
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    testResults.push(data);
+                    addMarkerToExplore(data);
+                });
+                
+                document.getElementById('stat-count').innerText = testResults.length;
+            }, (err) => console.error("Firestore error:", err));
+        }
+
+        function setupEventListeners() {
+            // Tabs
+            document.getElementById('btn-rapportera').onclick = () => switchTab('rapportera');
+            document.getElementById('btn-utforska').onclick = () => switchTab('utforska');
+
+            // GPS
+            document.getElementById('btn-gps').onclick = () => {
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(pos => {
+                        const latlng = [pos.coords.latitude, pos.coords.longitude];
+                        reportMap.setView(latlng, 15);
+                        reportMarker.setLatLng(latlng);
+                        document.getElementById('coord-display').innerText = `${latlng[0].toFixed(4)}, ${latlng[1].toFixed(4)}`;
+                    });
+                }
+            };
+
+            // pH slider
+            document.getElementById('form-ph').oninput = (e) => {
+                document.getElementById('ph-val').innerText = parseFloat(e.target.value).toFixed(1).replace('.', ',');
+            };
+
+            // Toggle buttons
+            setupToggle('alger-group', val => selectedAlger = val);
+            setupToggle('status-group', val => selectedStatus = val);
+
+            // Submit
+            document.getElementById('btn-submit').onclick = handleSubmit;
+        }
+
+        function setupToggle(groupId, callback) {
+            const container = document.getElementById(groupId);
+            const btns = container.querySelectorAll('button');
+            btns.forEach(btn => {
+                btn.onclick = () => {
+                    btns.forEach(b => {
+                        b.classList.remove('bg-white', 'text-blue-600', 'shadow-sm');
+                        b.classList.add('text-slate-400');
+                    });
+                    btn.classList.add('bg-white', 'text-blue-600', 'shadow-sm');
+                    btn.classList.remove('text-slate-400');
+                    callback(btn.dataset.val);
+                };
+            });
+        }
+
+        function switchTab(tab) {
+            const btnR = document.getElementById('btn-rapportera');
+            const btnU = document.getElementById('btn-utforska');
+            const viewR = document.getElementById('view-rapportera');
+            const viewU = document.getElementById('view-utforska');
+
+            if (tab === 'rapportera') {
+                btnR.classList.add('tab-active');
+                btnU.classList.remove('tab-active');
+                viewR.classList.remove('hidden');
+                viewU.classList.add('hidden');
+            } else {
+                btnU.classList.add('tab-active');
+                btnR.classList.remove('tab-active');
+                viewU.classList.remove('hidden');
+                viewR.classList.add('hidden');
+                setTimeout(() => exploreMap.invalidateSize(), 100);
+            }
+        }
+
+        function resetForm() {
+            document.querySelectorAll('input, select, textarea').forEach(el => el.value = '');
+            document.getElementById('form-ph').value = 0;
+            document.getElementById('ph-val').innerText = '0,0';
+            selectedAlger = null;
+            selectedStatus = null;
+            document.querySelectorAll('.error-ring, .ph-error').forEach(el => el.classList.remove('error-ring', 'ph-error'));
+            document.getElementById('form-error-msg').classList.add('hidden');
+            document.querySelectorAll('#alger-group button, #status-group button').forEach(b => {
+                b.classList.remove('bg-white', 'text-blue-600', 'shadow-sm');
+                b.classList.add('text-slate-400');
+            });
+        }
+
+        async function handleSubmit() {
+            if (!user) return;
+            
+            const skola = document.getElementById('form-skola').value;
+            const klass = document.getElementById('form-klass').value;
+            const plats = document.getElementById('form-plats').value;
+            const temp = document.getElementById('form-temp').value;
+            const sikt = document.getElementById('form-siktdjup').value;
+            const grumlighet = document.getElementById('form-grumlighet').value;
+            const syre = document.getElementById('form-syrehalt').value;
+            const ph = document.getElementById('form-ph').value;
+            const ecoli = document.getElementById('form-ecoli').value;
+            const kvave = document.getElementById('form-kvave').value;
+            const fosfor = document.getElementById('form-fosfor').value;
+
+            // Validering
+            let errors = [];
+            const check = (id, val, isRange = false) => {
+                const el = document.getElementById(id);
+                if (!val || val === "" || val === "välj") {
+                    if(isRange) el.parentElement.parentElement.classList.add('ph-error');
+                    else el.classList.add('error-ring');
+                    errors.push(id);
+                } else {
+                    if(isRange) el.parentElement.parentElement.classList.remove('ph-error');
+                    else el.classList.remove('error-ring');
+                }
+            };
+
+            check('form-skola', skola);
+            check('form-klass', klass);
+            check('form-plats', plats);
+            check('form-temp', temp);
+            check('form-siktdjup', sikt);
+            check('form-grumlighet', grumlighet);
+            check('form-syrehalt', syre);
+            check('form-ecoli', ecoli);
+            check('form-ph', ph > 0 ? ph : null, true);
+            
+            if (!selectedAlger) { document.getElementById('alger-group').classList.add('error-ring'); errors.push('alger'); }
+            else { document.getElementById('alger-group').classList.remove('error-ring'); }
+            
+            if (!selectedStatus) { document.getElementById('status-group').classList.add('error-ring'); errors.push('status'); }
+            else { document.getElementById('status-group').classList.remove('error-ring'); }
+
+            if (errors.length > 0) {
+                document.getElementById('form-error-msg').classList.remove('hidden');
+                return;
+            }
+
+            document.getElementById('form-error-msg').classList.add('hidden');
+            const pos = reportMarker.getLatLng();
+            const datum = new Date().toLocaleDateString('sv-SE');
+
+            const payload = {
+                skola, klass, plats, temp, sikt, grumlighet, syre, ph, ecoli, kvave, fosfor,
+                alger: selectedAlger, status: selectedStatus,
+                obs: document.getElementById('form-obs').value,
+                feedback: document.getElementById('form-feedback').value,
+                lat: pos.lat, lng: pos.lng,
+                timestamp: new Date().toISOString(), datumStr: datum,
+                userId: user.uid
+            };
+
+            try {
+                const testerCol = collection(db, 'artifacts', appId, 'public', 'data', 'tester');
+                await addDoc(testerCol, payload);
+                
+                document.getElementById('success-summary').innerHTML = `<b>${skola} ${klass}</b><br/>📍 ${plats}, ${datum}<br/><br/>Tack för er rapport, nu syns den på kartan tillsammans med andra rapporter`;
+                document.getElementById('success-modal').classList.remove('hidden');
+                
+                setTimeout(() => {
+                    document.getElementById('success-modal').classList.add('hidden');
+                    resetForm();
+                    switchTab('utforska');
+                }, 4000);
+            } catch (err) { 
+                console.error("Submit error:", err);
+                alert("Kunde inte skicka. Kontrollera din internetanslutning.");
+            }
+        }
+
+        function addMarkerToExplore(data) {
+            const colors = {'Hemmestaskolan': '#1e40af', 'Kyrkskolan': '#22c55e', 'Lemshaga': '#a855f7', 'Rotaryklubben': '#F7A81B', 'Sjöscouterna': '#8BAAF0'};
+            const m = L.circleMarker([data.lat, data.lng], {
+                radius: 10,
+                fillColor: colors[data.skola] || '#94a3b8',
+                color: 'white', weight: 2, fillOpacity: 0.9
+            }).addTo(exploreMap).bindPopup(`
+                <div style="min-width:180px">
+                    <b style="font-size:14px; color:${colors[data.skola]}">${data.skola} ${data.klass}</b><br/>
+                    <div style="font-size:11px; color:#64748b; margin:4px 0">📍 ${data.plats} <span style="margin-left:4px">${data.datumStr || ''}</span></div>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; font-size:11px; gap:4px; border-top:1px solid #eee; padding-top:6px">
+                        <span>Temp: <b>${data.temp}°C</b></span>
+                        <span>Siktdjup: <b>${data.sikt}m</b></span>
+                        <span>Grumlighet: <b>${data.grumlighet}</b></span>
+                        <span>Syre: <b>${data.syre}%</b></span>
+                        <span>pH: <b>${data.ph}</b></span>
+                        <span>Kväve: <b>${data.kvave}</b></span>
+                        <span>Fosfor: <b>${data.fosfor}</b></span>
+                        <span>Alger: <b>${data.alger}</b></span>
+                    </div>
+                    <div style="font-size:11px; margin-top:4px">E.coli: <b>${data.ecoli}</b></div>
+                    <div style="font-size:10px; font-style:italic; margin-top:6px; color:#475569">${data.obs ? '"' + data.obs + '"' : ''}</div>
+                    <div style="margin-top:6px; padding-top:4px; border-top:1px solid #e2e8f0; font-weight:bold; color:${data.status === 'Friskt' ? '#16a34a' : '#dc2626'}">
+                        Status: ${data.status}
+                    </div>
+                </div>
+            `);
+            exploreMarkers.push(m);
+        }
+
+        function downloadCSV() {
+            if (testResults.length === 0) return;
+            const headers = ["Datum", "Rapportör", "Grupp", "Plats", "Lat", "Lng", "Temp", "Siktdjup", "Grumlighet", "Syre", "pH", "Kväve", "Fosfor", "Ecoli", "Alger", "Status", "Observationer"];
+            const rows = testResults.map(r => [
+                r.datumStr || "", r.skola, r.klass, r.plats, r.lat, r.lng, r.temp, r.sikt, r.grumlighet, r.syre, r.ph, r.kvave, r.fosfor, r.ecoli, r.alger, r.status, `"${r.obs?.replace(/"/g, '""')}"`
+            ]);
+            let csvContent = "data:text/csv;charset=utf-8,\uFEFF" + headers.join(";") + "\n" + rows.map(e => e.join(";")).join("\n");
+            const link = document.createElement("a");
+            link.href = encodeURI(csvContent);
+            link.download = `vattentest_${new Date().toISOString().split('T')[0]}.csv`;
+            link.click();
+        }
+
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>
