@@ -61,17 +61,20 @@
                             <div id="kod-status" class="text-[10px] font-bold mt-1 h-3"></div>
                         </div>
                     </div>
+                    
+        <!-- DEFINIERA RAPPORTÖRER -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <select id="form-skola" class="w-full p-2 border border-slate-200 rounded-md outline-none focus:ring-1 focus:ring-blue-500">
                             <option value="">-- välj rapportör --</option>
                             <option value="Hemmestaskolan">Hemmestaskolan</option>
                             <option value="Kyrkskolan">Kyrkskolan</option>
-                            <option value="Lemshaga">Lemshaga</option>
+                            <option value="Lemshaga">Lemshaga akademi</option>
                             <option value="Rotaryklubben">Rotaryklubben</option>
                             <option value="Sjöscouterna">Sjöscouterna</option>
                         </select>
                         <input id="form-klass" placeholder="Klass eller grupp" class="w-full p-2 border border-slate-200 rounded-md outline-none">
                     </div>
+                    
                     <input id="form-plats" placeholder="Testplatsens namn" class="w-full p-2 border border-slate-200 rounded-md outline-none mb-4">
                     <p class="text-xs font-bold text-slate-500 mb-2">Markera testplats på kartan</p>
                     <div id="map-report" class="mb-4"></div>
@@ -169,6 +172,8 @@
                 <div class="flex justify-center">
                     <div id="map-explore" class="shadow-xl border-4 border-white"></div>
                 </div>
+
+        <!-- TECKENFÖRKLARING RAPPORTÖRER + obs färger -->
                 <div class="bg-white p-6 rounded-2xl border border-slate-100 flex flex-wrap justify-center gap-8 shadow-sm">
                     <div class="flex items-center gap-2"><div class="w-4 h-4 rounded-full bg-[#1e40af]"></div><span class="text-sm font-bold text-slate-600">Hemmestaskolan</span></div>
                     <div class="flex items-center gap-2"><div class="w-4 h-4 rounded-full bg-[#22c55e]"></div><span class="text-sm font-bold text-slate-600">Kyrkskolan</span></div>
@@ -176,6 +181,7 @@
                     <div class="flex items-center gap-2"><div class="w-4 h-4 rounded-full bg-[#F7A81B]"></div><span class="text-sm font-bold text-slate-600">Rotaryklubben</span></div>
                     <div class="flex items-center gap-2"><div class="w-4 h-4 rounded-full bg-[#8BAAF0]"></div><span class="text-sm font-bold text-slate-600">Sjöscouterna</span></div>
                 </div>
+                
                 <button id="btn-download" class="w-full flex items-center justify-center gap-2 bg-white border-2 border-blue-100 text-blue-600 font-bold py-3 rounded-xl hover:bg-blue-50 transition-colors">
                     <i data-lucide="download" class="w-5 h-5"></i>
                     Ladda ner alla testresultat .csv
@@ -488,6 +494,7 @@
         }
 
         // POPUP med testresultat
+        // DEFINIERA RAPPORTÖRERNAS FÄRGKODER
         function addMarkerToExplore(data) {
             const colors = {'Hemmestaskolan': '#1e40af', 'Kyrkskolan': '#22c55e', 'Lemshaga': '#a855f7', 'Rotaryklubben': '#F7A81B', 'Sjöscouterna': '#8BAAF0'};
             const m = L.circleMarker([data.lat, data.lng], {
@@ -519,9 +526,10 @@
         }
 
        // Exportfunktion - nedladdning av databasen, utom Rapportörskod och svar på sista frågan om väskan
+            // Ursprungliga Rubrikerna Skola resp Klass byts här till: Rapportör resp Grupp
        function downloadCSV() {
             if (testResults.length === 0) return;
-            const headers = ["Datum", "Skola", "Klass", "Plats", "Lat", "Lng", "Temp", "Siktdjup", "Grumlighet", "Syre", "pH", "Kväve", "Fosfor", "Ecoli", "Alger", "Status", "Observationer"];
+            const headers = ["Datum", "Rapportör", "Grupp", "Plats", "Lat", "Lng", "Temp", "Siktdjup", "Grumlighet", "Syre", "pH", "Kväve", "Fosfor", "Ecoli", "Alger", "Status", "Observationer"];
             const rows = testResults.map(r => [
                 r.datumStr || "", r.skola, r.klass, r.plats, r.lat, r.lng, r.temp, r.sikt, r.grumlighet, r.syre, r.ph, r.kvave, r.fosfor, r.ecoli, r.alger, r.status, `"${r.obs?.replace(/"/g, '""')}"`
             ]);
