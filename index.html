@@ -63,12 +63,14 @@
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <select id="form-skola" class="w-full p-2 border border-slate-200 rounded-md outline-none focus:ring-1 focus:ring-blue-500">
-                            <option value="">-- välj skola --</option>
+                            <option value="">-- välj rapportör --</option>
                             <option value="Hemmestaskolan">Hemmestaskolan</option>
                             <option value="Kyrkskolan">Kyrkskolan</option>
                             <option value="Lemshaga">Lemshaga</option>
+                            <option value="Rotaryklubben">Rotaryklubben</option>
+                            <option value="Sjöscouterna">Sjöscouterna</option>
                         </select>
-                        <input id="form-klass" placeholder="Klass (t.ex. 8a)" class="w-full p-2 border border-slate-200 rounded-md outline-none">
+                        <input id="form-klass" placeholder="Klass (t ex 8a) eller grupp" class="w-full p-2 border border-slate-200 rounded-md outline-none">
                     </div>
                     <input id="form-plats" placeholder="Platsens namn" class="w-full p-2 border border-slate-200 rounded-md outline-none mb-4">
                     <p class="text-xs font-bold text-slate-500 mb-2">Markera testplats på kartan</p>
@@ -469,7 +471,7 @@
                 const testerCol = collection(db, 'artifacts', appId, 'public', 'data', 'tester');
                 await addDoc(testerCol, payload);
                 
-                document.getElementById('success-summary').innerHTML = `<b>${skola} klass ${klass}</b><br/>📍 ${plats}, ${datum}<br/><br/>Tack för er rapport, nu syns den på kartan tillsammans med andra rapporter`;
+                document.getElementById('success-summary').innerHTML = `<b>${skola} ${klass}</b><br/>📍 ${plats}, ${datum}<br/><br/>Tack för er rapport, nu syns den på kartan tillsammans med andra rapporter`;
                 document.getElementById('success-modal').classList.remove('hidden');
                 
                 setTimeout(() => {
@@ -485,14 +487,14 @@
 
         // POPUP med testresultat
         function addMarkerToExplore(data) {
-            const colors = {'Hemmestaskolan': '#1e40af', 'Kyrkskolan': '#22c55e', 'Lemshaga': '#a855f7'};
+            const colors = {'Hemmestaskolan': '#1e40af', 'Kyrkskolan': '#22c55e', 'Lemshaga': '#a855f7', 'Rotaryklubben': '#F7A81B', 'Sjöscouterna': '#8BAAF0'};
             const m = L.circleMarker([data.lat, data.lng], {
                 radius: 10,
                 fillColor: colors[data.skola] || '#94a3b8',
                 color: 'white', weight: 2, fillOpacity: 0.9
             }).addTo(exploreMap).bindPopup(`
                 <div style="min-width:180px">
-                    <b style="font-size:14px; color:${colors[data.skola]}">${data.skola} klass ${data.klass}</b><br/>
+                    <b style="font-size:14px; color:${colors[data.skola]}">${data.skola} ${data.klass}</b><br/>
                     <div style="font-size:11px; color:#64748b; margin:4px 0">📍 ${data.plats} <span style="margin-left:4px">${data.datumStr || ''}</span></div>
                     <div style="display:grid; grid-template-columns: 1fr 1fr; font-size:11px; gap:4px; border-top:1px solid #eee; padding-top:6px">
                         <span>Temp: <b>${data.temp}°C</b></span>
