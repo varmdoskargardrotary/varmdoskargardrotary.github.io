@@ -529,7 +529,7 @@
             // Ursprungliga Rubrikerna Skola resp Klass byts här till: Rapportör resp Grupp
        function downloadCSV() {
             if (testResults.length === 0) return;
-            const headers = ["Datum", "Rapportör", "Grupp", "Plats", "Lat", "Lng", "Temp", "Siktdjup", "Grumlighet", "Syre", "pH", "Kväve", "Fosfor", "Ecoli", "Alger", "Status", "Observationer"];
+            const headers = ["Datum", "Rapportör", "Grupp", "Plats", "Lat", "Long", "Temp", "Siktdjup", "Grumlighet", "Syre", "pH", "Kväve", "Fosfor", "Ecoli", "Alger", "Status", "Observationer"];
             const rows = testResults.map(r => [
                 r.datumStr || "", r.skola, r.klass, r.plats, r.lat, r.lng, r.temp, r.sikt, r.grumlighet, r.syre, r.ph, r.kvave, r.fosfor, r.ecoli, r.alger, r.status, `"${r.obs?.replace(/"/g, '""')}"`
             ]);
