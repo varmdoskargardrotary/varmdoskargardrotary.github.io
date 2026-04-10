@@ -62,7 +62,7 @@
                         </div>
                     </div>
                     
-        <!-- DEFINIERA RAPPORTÖRER -->
+<!-- DEFINIERA RAPPORTÖRER för rullgardin -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <select id="form-skola" class="w-full p-2 border border-slate-200 rounded-md outline-none focus:ring-1 focus:ring-blue-500">
                             <option value="">-- välj rapportör --</option>
@@ -173,7 +173,7 @@
                     <div id="map-explore" class="shadow-xl border-4 border-white"></div>
                 </div>
 
-        <!-- TECKENFÖRKLARING RAPPORTÖRER + obs färger -->
+<!-- TECKENFÖRKLARING RAPPORTÖRER + definition av färger -->
                 <div class="bg-white p-6 rounded-2xl border border-slate-100 flex flex-wrap justify-center gap-8 shadow-sm">
                     <div class="flex items-center gap-2"><div class="w-4 h-4 rounded-full bg-[#1e40af]"></div><span class="text-sm font-bold text-slate-600">Hemmestaskolan</span></div>
                     <div class="flex items-center gap-2"><div class="w-4 h-4 rounded-full bg-[#22c55e]"></div><span class="text-sm font-bold text-slate-600">Kyrkskolan</span></div>
@@ -189,6 +189,7 @@
             </div>
         </main>
 
+// sidfot med länk till klubbens väsk-sida
         <footer class="mt-auto text-center py-8 opacity-60">
             <p class="text-[10px] uppercase font-bold tracking-widest text-slate-400 mb-2">Ett initiativ från</p>
             <a href="https://varmdoskargard.se/page/vattentestväskan/" target="_blank" class="text-slate-600 hover:text-blue-600 font-bold underline flex items-center justify-center gap-1">
@@ -474,7 +475,7 @@
                 userId: auth.currentUser.uid
             };
 
-            // Tack-popup vid inskick, visas 3 sekunder och växlar sen till flik 2
+// TACK-POPUP vid inskick, visas 3 sekunder och växlar sen till flik 2
             try {
                 const testerCol = collection(db, 'artifacts', appId, 'public', 'data', 'tester');
                 await addDoc(testerCol, payload);
@@ -493,8 +494,8 @@
             }
         }
 
-        // POPUP med testresultat
-        // DEFINIERA RAPPORTÖRERNAS FÄRGKODER
+// POPUP med testresultat
+// UPPREPA RAPPORTÖRERNAS FÄRGKODER för kartans markeringar
         function addMarkerToExplore(data) {
             const colors = {'Hemmestaskolan': '#1e40af', 'Kyrkskolan': '#22c55e', 'Lemshaga': '#a855f7', 'Rotaryklubben': '#F7A81B', 'Sjöscouterna': '#8BAAF0'};
             const m = L.circleMarker([data.lat, data.lng], {
@@ -525,8 +526,8 @@
             exploreMarkers.push(m);
         }
 
-       // Exportfunktion - nedladdning av databasen, utom Rapportörskod och svar på sista frågan om väskan
-            // Ursprungliga Rubrikerna Skola resp Klass byts här till: Rapportör resp Grupp
+// Exportfunktion - nedladdning av databasen, utom Rapportörskod och svar på sista frågan om väskan
+   // Databasens fältnamn Skola resp Klass byts här till rubrikerna: Rapportör resp Grupp, eftersom kretsen vidgats
        function downloadCSV() {
             if (testResults.length === 0) return;
             const headers = ["Datum", "Rapportör", "Grupp", "Plats", "Lat", "Long", "Temp", "Siktdjup", "Grumlighet", "Syre", "pH", "Kväve", "Fosfor", "Ecoli", "Alger", "Status", "Observationer"];
@@ -536,6 +537,7 @@
             let csvContent = "data:text/csv;charset=utf-8,\uFEFF" + headers.join(";") + "\n" + rows.map(e => e.join(";")).join("\n");
             const link = document.createElement("a");
             link.href = encodeURI(csvContent);
+// Definiera filnamnet
             link.download = `vattentester_Värmdö_t_o_m_${new Date().toISOString().split('T')[0]}.csv`;
             link.click();
         }
