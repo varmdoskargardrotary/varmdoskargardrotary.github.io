@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vattenkollen Värmdö</title>
     
-    <!-- Tailwind för styling -->
+    <!-- Tailwind for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     
     <!-- Leaflet CSS & JS -->
@@ -27,6 +27,91 @@
         input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 6px; cursor: pointer; border-radius: 3px; }
         .success-overlay { animation: fadeIn 0.3s ease-out; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* --- Validation banner shown when required fields are missing on submit --- */
+        #validation-banner {
+            display: none;
+            background: #ffe0e0;
+            border: 2px solid #cc0000;
+            color: #cc0000;
+            padding: 12px 16px;
+            border-radius: 10px;
+            margin-bottom: 12px;
+            font-weight: bold;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        /* --- Tooltip styles for measurement field info icons --- */
+        .info-tooltip {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            cursor: help;
+            margin-left: 4px;
+        }
+        .info-tooltip .tooltip-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #94a3b8;
+            color: white;
+            font-size: 9px;
+            font-weight: bold;
+            font-style: normal;
+            line-height: 1;
+            user-select: none;
+        }
+        .info-tooltip .tooltip-text {
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.2s;
+            background: #1e293b;
+            color: white;
+            font-size: 11px;
+            line-height: 1.5;
+            border-radius: 8px;
+            padding: 8px 10px;
+            width: 210px;
+            position: absolute;
+            z-index: 200;
+            bottom: 130%;
+            left: 50%;
+            transform: translateX(-50%);
+            pointer-events: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            font-weight: normal;
+            text-transform: none;
+            letter-spacing: normal;
+        }
+        .info-tooltip .tooltip-text::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 5px solid transparent;
+            border-top-color: #1e293b;
+        }
+        .info-tooltip:hover .tooltip-text,
+        .info-tooltip:focus .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+        /* Flip tooltip upward when near bottom of screen */
+        .tooltip-flip .tooltip-text {
+            bottom: auto;
+            top: 130%;
+        }
+        .tooltip-flip .tooltip-text::after {
+            top: auto;
+            bottom: 100%;
+            border-top-color: transparent;
+            border-bottom-color: #1e293b;
+        }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-900 pb-20">
@@ -52,7 +137,7 @@
 
         <main class="flex-grow px-4 mt-6">
             <div id="view-rapportera" class="space-y-6 pb-12">
-                <!-- Sektion 1: Bakgrund -->
+                <!-- Section 1: Background -->
                 <section class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
                     <div class="flex justify-between items-start mb-4">
                         <h2 class="text-lg font-bold flex items-center gap-2">📍 1. Bakgrund</h2>
@@ -63,7 +148,7 @@
                         </div>
                     </div>
                     
-<!-- DEFINIERA RAPPORTÖRER för rullgardin -->
+                    <!-- Define reporters for dropdown -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <select id="form-skola" class="w-full p-2 border border-slate-200 rounded-md outline-none focus:ring-1 focus:ring-blue-500">
                             <option value="">-- välj rapportör --</option>
@@ -84,30 +169,60 @@
                     </div>
                 </section>
 
-                <!-- Sektion 2: Vattenanalys -->
+                <!-- Section 2: Water analysis -->
                 <section id="section-analysis" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 transition-all">
                     <h2 class="text-lg font-bold flex items-center gap-2 mb-6">🧪 2. Vattenanalys</h2>
                     <div class="grid grid-cols-2 gap-6 mb-8">
                         <div>
-                            <label class="text-[10px] uppercase font-bold text-slate-400 block mb-1">Vattentemp (°C)</label>
+                            <label class="text-[10px] uppercase font-bold text-slate-400 block mb-1 flex items-center">
+                                Vattentemp (°C)
+                                <span class="info-tooltip" tabindex="0">
+                                    <span class="tooltip-icon">i</span>
+                                    <span class="tooltip-text">Normalt intervall i svenska sjöar: 5–20°C. Höga temperaturer kan främja algblomning och sänka syrehalten.</span>
+                                </span>
+                            </label>
                             <input id="form-temp" type="number" step="0.1" class="w-full p-2 border border-slate-200 rounded-md outline-none" placeholder="0">
                         </div>
                         <div>
-                            <label class="text-[10px] font-bold text-slate-400 block mb-1">SIKTDJUP (m)</label>
+                            <label class="text-[10px] font-bold text-slate-400 block mb-1 flex items-center">
+                                SIKTDJUP (m)
+                                <span class="info-tooltip" tabindex="0">
+                                    <span class="tooltip-icon">i</span>
+                                    <span class="tooltip-text">Siktdjup: hur djupt man kan se en vit skiva. Friska svenska sjöar: 3–8 m. Värden under 1 m tyder på hög grumlighet.</span>
+                                </span>
+                            </label>
                             <input id="form-siktdjup" type="number" step="0.1" class="w-full p-2 border border-slate-200 rounded-md outline-none" placeholder="0,0">
                         </div>
                         <div>
-                            <label class="text-[10px] uppercase font-bold text-slate-400 block mb-1">Grumlighet (1-50)</label>
+                            <label class="text-[10px] uppercase font-bold text-slate-400 block mb-1 flex items-center">
+                                Grumlighet (1-50)
+                                <span class="info-tooltip" tabindex="0">
+                                    <span class="tooltip-icon">i</span>
+                                    <span class="tooltip-text">Grumlighet i NTU (1–50). Rent dricksvatten är under 1. Värden över 10 tyder på partiklar, alger eller sediment i vattnet.</span>
+                                </span>
+                            </label>
                             <input id="form-grumlighet" type="number" class="w-full p-2 border border-slate-200 rounded-md outline-none" placeholder="0">
                         </div>
                         <div>
-                            <label class="text-[10px] uppercase font-bold text-slate-400 block mb-1">Syrehalt (%)</label>
+                            <label class="text-[10px] uppercase font-bold text-slate-400 block mb-1 flex items-center">
+                                Syrehalt (%)
+                                <span class="info-tooltip" tabindex="0">
+                                    <span class="tooltip-icon">i</span>
+                                    <span class="tooltip-text">Syremättnad i vatten. Frisk nivå: 80–110%. Under 50% är skadligt för fisk. Över 120% kan tyda på kraftig algblomning.</span>
+                                </span>
+                            </label>
                             <input id="form-syrehalt" type="number" class="w-full p-2 border border-slate-200 rounded-md outline-none" placeholder="0">
                         </div>
                     </div>
                     <div id="ph-container" class="mb-10 transition-all">
                         <div class="flex justify-between items-center mb-2">
-                            <label class="text-[10px] font-bold text-slate-400 tracking-wider">SURHET (pH)</label>
+                            <label class="text-[10px] font-bold text-slate-400 tracking-wider flex items-center">
+                                SURHET (pH)
+                                <span class="info-tooltip" tabindex="0">
+                                    <span class="tooltip-icon">i</span>
+                                    <span class="tooltip-text">pH-skala 0–14. Neutralt = 7. Friska svenska sjöar: 6,5–8,5. Under 6 är surt och skadligt för fisk och vatteninsekter.</span>
+                                </span>
+                            </label>
                             <span id="ph-val" class="bg-blue-600 text-white text-[11px] px-2.5 py-0.5 rounded-full font-bold">0,0</span>
                         </div>
                         <div class="relative h-2 rounded-full bg-gradient-to-r from-red-500 via-yellow-400 via-green-500 via-blue-500 to-purple-600 flex items-center">
@@ -118,16 +233,34 @@
                         <h3 class="text-[10px] font-bold text-blue-800 uppercase tracking-widest">Näringsämnen & Bakterier</h3>
                         <div class="grid grid-cols-2 gap-4">
                             <div>
-                                <label class="text-[9px] font-bold text-blue-700 block mb-1">Kväve (ppm)</label>
+                                <label class="text-[9px] font-bold text-blue-700 block mb-1 flex items-center">
+                                    Kväve (ppm)
+                                    <span class="info-tooltip" tabindex="0">
+                                        <span class="tooltip-icon">i</span>
+                                        <span class="tooltip-text">Kväve (ppm). Bakgrundsnivå i svenska sjöar: 0,3–1,0 ppm. Värden över 2 ppm tyder på avrinning från gödsel eller föroreningar.</span>
+                                    </span>
+                                </label>
                                 <input id="form-kvave" type="number" step="0.1" class="w-full p-2 border border-slate-200 rounded-md outline-none" placeholder="0">
                             </div>
                             <div>
-                                <label class="text-[9px] font-bold text-blue-700 block mb-1">Fosfor (ppm)</label>
+                                <label class="text-[9px] font-bold text-blue-700 block mb-1 flex items-center">
+                                    Fosfor (ppm)
+                                    <span class="info-tooltip" tabindex="0">
+                                        <span class="tooltip-icon">i</span>
+                                        <span class="tooltip-text">Fosfor (ppm). Den viktigaste drivkraften bakom algblomning. God vattenkvalitet: under 0,025 ppm. Över 0,1 ppm innebär hög risk för övergödning.</span>
+                                    </span>
+                                </label>
                                 <input id="form-fosfor" type="number" step="0.1" class="w-full p-2 border border-slate-200 rounded-md outline-none" placeholder="0">
                             </div>
                         </div>
                         <div>
-                            <label class="text-[9px] font-bold text-blue-700 block mb-1">Kolibakterier (E. coli)</label>
+                            <label class="text-[9px] font-bold text-blue-700 block mb-1 flex items-center">
+                                Kolibakterier (E. coli)
+                                <span class="info-tooltip" tabindex="0">
+                                    <span class="tooltip-icon">i</span>
+                                    <span class="tooltip-text">E. coli indikerar fekal förorening från människor eller djur. Varje detekterad förekomst i badvatten är en hälsovarning – undvik bad.</span>
+                                </span>
+                            </label>
                             <select id="form-ecoli" class="w-full p-2 border border-slate-200 rounded-md outline-none">
                                 <option value="välj">-- Välj --</option>
                                 <option value="Ej testat">Ej testat</option>
@@ -138,14 +271,26 @@
                     </div>
                     <div class="grid grid-cols-2 gap-8 text-center">
                         <div>
-                            <label class="text-[9px] font-bold text-slate-400 uppercase block mb-2">Finns blågröna Alger?</label>
+                            <label class="text-[9px] font-bold text-slate-400 uppercase block mb-2 flex items-center justify-center">
+                                Finns blågröna Alger?
+                                <span class="info-tooltip tooltip-flip" tabindex="0">
+                                    <span class="tooltip-icon">i</span>
+                                    <span class="tooltip-text">Cyanobakterier (blågröna alger) kan producera gifter som är skadliga för människor, hundar och djurliv. Syns som gröna/blå strängar eller skum på ytan – undvik all kontakt.</span>
+                                </span>
+                            </label>
                             <div id="alger-group" class="flex rounded-lg overflow-hidden border border-slate-200 bg-slate-100">
                                 <button data-val="Nej" class="flex-1 py-2 text-sm font-bold text-slate-400">Nej</button>
                                 <button data-val="Ja" class="flex-1 py-2 text-sm font-bold text-slate-400">Ja</button>
                             </div>
                         </div>
                         <div>
-                            <label class="text-[9px] font-bold text-slate-400 uppercase block mb-2">Bedömd helhetsstatus</label>
+                            <label class="text-[9px] font-bold text-slate-400 uppercase block mb-2 flex items-center justify-center">
+                                Bedömd helhetsstatus
+                                <span class="info-tooltip tooltip-flip" tabindex="0">
+                                    <span class="tooltip-icon">i</span>
+                                    <span class="tooltip-text">Din samlade bedömning av vattenkvaliteten baserad på alla mätvärden och observationer. "Friskt" = bra kvalitet, "Dåligt" = dålig kvalitet.</span>
+                                </span>
+                            </label>
                             <div id="status-group" class="flex rounded-lg overflow-hidden border border-slate-200 bg-slate-100">
                                 <button data-val="Friskt" class="flex-1 py-2 text-sm font-bold text-slate-400">Friskt</button>
                                 <button data-val="Dåligt" class="flex-1 py-2 text-sm font-bold text-slate-400">Dåligt</button>
@@ -154,13 +299,19 @@
                     </div>
                 </section>
 
-                <!-- Sektion 3: Observationer -->
+                <!-- Section 3: Observations -->
                 <section class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
                     <h2 class="text-lg font-bold flex items-center gap-2 mb-4">📝 3. Observationer</h2>
                     <textarea id="form-obs" placeholder="Egna observationer (djur, växter, skräp, lukt)..." class="w-full p-4 border border-slate-200 rounded-xl bg-slate-50 min-h-[100px] mb-4 outline-none"></textarea>
                     <label class="text-[10px] font-bold text-slate-400 uppercase block mb-2">Vad tyckte ni om vattentestväskan?</label>
                     <textarea id="form-vaska" placeholder="Hur fungerade materialet?" class="w-full p-4 border border-slate-200 rounded-xl bg-slate-50 min-h-[80px] outline-none"></textarea>
                 </section>
+
+                <!-- Validation banner: shown when required fields are missing -->
+                <div id="validation-banner">
+                    ⚠️ Rödmarkerade fält måste fyllas i före inskick
+                </div>
+
                 <button id="btn-submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-lg transition-transform active:scale-[0.98]">
                     Skicka in er vattentest
                 </button>
@@ -172,7 +323,7 @@
                     <div id="map-explore" class="shadow-xl border-4 border-white"></div>
                 </div>
 
-<!-- TECKENFÖRKLARING RAPPORTÖRER + definition av färger -->
+                <!-- Legend: reporters and their marker colours -->
                 <div class="bg-white p-6 rounded-2xl border border-slate-100 flex flex-wrap justify-center gap-8 shadow-sm">
                     <div class="flex items-center gap-2"><div class="w-4 h-4 rounded-full bg-[#1e40af]"></div><span class="text-sm font-bold text-slate-600">Hemmestaskolan</span></div>
                     <div class="flex items-center gap-2"><div class="w-4 h-4 rounded-full bg-[#22c55e]"></div><span class="text-sm font-bold text-slate-600">Kyrkskolan</span></div>
@@ -188,7 +339,7 @@
             </div>
         </main>
 
-<!--- sidfot med länk till klubbens väsk-sida --->
+        <!-- Footer with link to the club's kit page -->
         <footer class="mt-auto text-center py-8 opacity-60">
             <p class="text-[10px] uppercase font-bold tracking-widest text-slate-400 mb-2">Ett initiativ från</p>
             <a href="https://varmdoskargard.se/page/vattenkollen/" target="_blank" class="text-slate-600 hover:text-blue-600 font-bold underline flex items-center justify-center gap-1">
@@ -230,10 +381,10 @@
         const auth = getAuth(app);
         const appId = 'varmdo-vattentest';
 
-        // Tvinga debug-token för testning
-        // self.FIREBASE_APPCHECK_DEBUG_TOKEN = "cd63dad5-1adb-49e0-bbed-81bc47f5ac80"; 
+        // Force debug token for local testing:
+        // self.FIREBASE_APPCHECK_DEBUG_TOKEN = "cd63dad5-1adb-49e0-bbed-81bc47f5ac80";
 
-        // Initiera App Check
+        // Initialise App Check with reCAPTCHA Enterprise
         const appCheck = initializeAppCheck(app, {
             provider: new ReCaptchaEnterpriseProvider('6LfSgqgsAAAAAGt2eRN8BhpW_L_sZTxJx8I0hSGa'),
             isTokenAutoRefreshEnabled: true
@@ -256,15 +407,15 @@
             initMaps();
             setupEventListeners();
             
-            // Vänta på autentisering innan vi laddar data
+            // Wait for authentication before loading data
             onAuthStateChanged(auth, (user) => {
                 if (user) {
-                    console.log("Användare inloggad anonymt:", user.uid);
+                    console.log("User signed in anonymously:", user.uid);
                     document.getElementById('connection-status').className = "w-3 h-3 bg-green-400 rounded-full shadow-[0_0_8px_rgba(74,222,128,0.6)]";
-                    // Ladda data först när vi är säkra på att vi har en session
+                    // Load data only once we have a confirmed session
                     loadData(user);
                 } else {
-                    signInAnonymously(auth).catch(err => console.error("Inloggningsfel:", err));
+                    signInAnonymously(auth).catch(err => console.error("Sign-in error:", err));
                 }
             });
         }
@@ -325,7 +476,7 @@
                 navigator.geolocation.getCurrentPosition(p => {
                     updatePosition(p.coords.latitude, p.coords.longitude);
                     reportMap.setView(currentPos, 15);
-                }, (err) => console.warn("GPS-fel:", err));
+                }, (err) => console.warn("GPS error:", err));
             };
             
             document.getElementById('btn-submit').onclick = validateAndSubmit;
@@ -362,10 +513,10 @@
         function loadData(user) {
             if (!user) return;
             
-            // Skapa sökvägen enligt de strikta reglerna för artifacts
+            // Build Firestore path following the artifacts security rules
             const testerCol = collection(db, 'artifacts', appId, 'public', 'data', 'tester');
             
-            // Starta lyssnaren
+            // Start real-time listener
             onSnapshot(testerCol, (snapshot) => {
                 testResults = [];
                 exploreMarkers.forEach(m => exploreMap.removeLayer(m));
@@ -375,12 +526,11 @@
                     testResults.push(data);
                     addMarkerToExplore(data);
                 });
-                console.log("Data laddad:", testResults.length, "tester hittades.");
+                console.log("Data loaded:", testResults.length, "tests found.");
             }, (err) => {
-                console.error("Snapshot error (App Check eller Permissions):", err);
-                // Om vi får 403 här beror det på att App Check-token nekas av Firebase server
+                console.error("Snapshot error (App Check or Permissions):", err);
                 if (err.code === 'permission-denied') {
-                    console.warn("Tips: Kontrollera att Debug Token är registrerad i Firebase-konsolen för App Check.");
+                    console.warn("Tip: Verify that the Debug Token is registered in the Firebase console under App Check.");
                 }
             });
         }
@@ -409,6 +559,28 @@
             selectedStatus = null;
             document.querySelectorAll('.error-ring').forEach(el => el.classList.remove('error-ring'));
             document.getElementById('kod-status').innerText = "";
+            // Hide validation banner on reset
+            document.getElementById('validation-banner').style.display = 'none';
+        }
+
+        // --- Play a two-tone success chime using the Web Audio API ---
+        function playSuccessSound() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(880, ctx.currentTime);        // A5
+                osc.frequency.setValueAtTime(1320, ctx.currentTime + 0.12); // E6
+                gain.gain.setValueAtTime(0.4, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.7);
+                osc.start(ctx.currentTime);
+                osc.stop(ctx.currentTime + 0.7);
+            } catch(e) {
+                // Silently ignore if browser blocks Audio API
+            }
         }
 
         async function validateAndSubmit() {
@@ -450,7 +622,25 @@
                 if (!f.val) hasErrors = true;
             });
 
-            if (hasErrors) return;
+            if (hasErrors) {
+                // Show the validation banner above the submit button
+                const banner = document.getElementById('validation-banner');
+                banner.style.display = 'block';
+
+                // Scroll to the first invalid field if it is outside the viewport
+                const firstError = document.querySelector('.error-ring, .ph-error');
+                if (firstError) {
+                    const rect = firstError.getBoundingClientRect();
+                    const isVisible = rect.top >= 0 && rect.bottom <= window.innerHeight;
+                    if (!isVisible) {
+                        firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }
+                return;
+            }
+
+            // All fields valid — hide the banner
+            document.getElementById('validation-banner').style.display = 'none';
 
             const skola = document.getElementById('form-skola').value;
             const klass = document.getElementById('form-klass').value;
@@ -474,13 +664,14 @@
                 userId: auth.currentUser.uid
             };
 
-// TACK-POPUP vid inskick, visas 3 sekunder och växlar sen till flik 2
+            // Thank-you popup on successful submit — shown for 4 seconds then switches to the Explore tab
             try {
                 const testerCol = collection(db, 'artifacts', appId, 'public', 'data', 'tester');
                 await addDoc(testerCol, payload);
                 
                 document.getElementById('success-summary').innerHTML = `<b>${skola} ${klass}</b><br/>📍 ${plats}, ${datum}<br/><br/>Tack för er rapport, nu syns den på kartan tillsammans med andra rapporter`;
                 document.getElementById('success-modal').classList.remove('hidden');
+                playSuccessSound(); // Play success chime when report is submitted
                 
                 setTimeout(() => {
                     document.getElementById('success-modal').classList.add('hidden');
@@ -493,8 +684,8 @@
             }
         }
 
-// POPUP med testresultat
-// UPPREPA RAPPORTÖRERNAS FÄRGKODER för kartans markeringar
+        // Map popup showing test results for each marker
+        // Reporter colour codes are repeated here to match the legend
         function addMarkerToExplore(data) {
             const colors = {'Hemmestaskolan': '#1e40af', 'Kyrkskolan': '#22c55e', 'Lemshaga': '#a855f7', 'Rotaryklubben': '#F7A81B', 'Demo': '#c10042'};
             const m = L.circleMarker([data.lat, data.lng], {
@@ -525,9 +716,10 @@
             exploreMarkers.push(m);
         }
 
-// Exportfunktion - nedladdning av databasen, utom Rapportörskod och svar på sista frågan om väskan
-   // Databasens fältnamn Skola resp Klass byts här till rubrikerna: Rapportör resp Grupp, eftersom kretsen vidgats
-       function downloadCSV() {
+        // CSV export — excludes reporter code and the kit feedback field.
+        // Database field names "skola" and "klass" are mapped to "Rapportör" and "Grupp"
+        // because the programme has expanded beyond schools.
+        function downloadCSV() {
             if (testResults.length === 0) return;
             const headers = ["Datum", "Rapportör", "Grupp", "Plats", "Lat", "Long", "Temp", "Siktdjup", "Grumlighet", "Syre", "pH", "Kväve", "Fosfor", "Ecoli", "Alger", "Status", "Observationer"];
             const rows = testResults.map(r => [
@@ -536,7 +728,7 @@
             let csvContent = "data:text/csv;charset=utf-8,\uFEFF" + headers.join(";") + "\n" + rows.map(e => e.join(";")).join("\n");
             const link = document.createElement("a");
             link.href = encodeURI(csvContent);
-// Definiera filnamnet
+            // Define the download filename
             link.download = `vattentester_Värmdö_t_o_m_${new Date().toISOString().split('T')[0]}.csv`;
             link.click();
         }
