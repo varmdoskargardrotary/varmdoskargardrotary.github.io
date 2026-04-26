@@ -8,4 +8,4 @@ to make environmental knowledge concrete and engaging for the community.
 
 The webb app https://vattenkollen.varmdoskargard.se
 
-Info on the test kit https://varmdoskargard.se/page/vattentestväskan/
+Info on the test kit https://varmdoskargard.se/page/vattenkollen/
