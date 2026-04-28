@@ -183,22 +183,14 @@
                             </label>
                             <input id="form-temp" type="number" step="0.1" class="w-full p-2 border border-slate-200 rounded-md outline-none" placeholder="0">
                         </div>
-                        <div>
-                            <label class="text-[10px] font-bold text-slate-400 block mb-1 flex items-center">
-                                SIKTDJUP (m)
-                                <span class="info-tooltip" tabindex="0">
-                                    <span class="tooltip-icon">i</span>
-                                    <span class="tooltip-text">Hur djupt man kan se en vit skiva? Friska svenska sjöar: 3–8 m. Värden under 1 m tyder på hög grumlighet.</span>
-                                </span>
-                            </label>
-                            <input id="form-siktdjup" type="number" step="0.1" class="w-full p-2 border border-slate-200 rounded-md outline-none" placeholder="0,0">
-                        </div>
+                        <!-- Siktdjup field removed; empty div keeps the 2-column grid layout intact -->
+                        <div></div>
                         <div>
                             <label class="text-[10px] uppercase font-bold text-slate-400 block mb-1 flex items-center">
                                 Grumlighet (1-50)
                                 <span class="info-tooltip" tabindex="0">
                                     <span class="tooltip-icon">i</span>
-                                    <span class="tooltip-text">Rent dricksvatten är under 1. Värden över 10 tyder på partiklar, alger eller sediment i vattnet.</span>
+                                    <span class="tooltip-text">Grumlighet i NTU (1–50). Rent dricksvatten är under 1. Värden över 10 tyder på partiklar, alger eller sediment i vattnet.</span>
                                 </span>
                             </label>
                             <input id="form-grumlighet" type="number" class="w-full p-2 border border-slate-200 rounded-md outline-none" placeholder="0">
@@ -208,7 +200,7 @@
                                 Syrehalt (%)
                                 <span class="info-tooltip" tabindex="0">
                                     <span class="tooltip-icon">i</span>
-                                    <span class="tooltip-text">Frisk nivå: 80–110%. Under 50% är skadligt för fisk. Över 120% kan tyda på kraftig algblomning.</span>
+                                    <span class="tooltip-text">Syremättnad i vatten. Frisk nivå: 80–110%. Under 50% är skadligt för fisk. Över 120% kan tyda på kraftig algblomning.</span>
                                 </span>
                             </label>
                             <input id="form-syrehalt" type="number" class="w-full p-2 border border-slate-200 rounded-md outline-none" placeholder="0">
@@ -220,7 +212,7 @@
                                 SURHET (pH)
                                 <span class="info-tooltip" tabindex="0">
                                     <span class="tooltip-icon">i</span>
-                                    <span class="tooltip-text">Neutralt pH = 7. Friska svenska sjöar: 6,5–8,5. Under 6 är surt och skadligt för fisk och vatteninsekter.</span>
+                                    <span class="tooltip-text">pH-skala 0–14. Neutralt = 7. Friska svenska sjöar: 6,5–8,5. Under 6 är surt och skadligt för fisk och vatteninsekter.</span>
                                 </span>
                             </label>
                             <span id="ph-val" class="bg-blue-600 text-white text-[11px] px-2.5 py-0.5 rounded-full font-bold">0,0</span>
@@ -237,7 +229,7 @@
                                     Kväve (ppm)
                                     <span class="info-tooltip" tabindex="0">
                                         <span class="tooltip-icon">i</span>
-                                        <span class="tooltip-text">Kväve bakgrundsnivå i svenska sjöar: 0,3–1,0 ppm. Värden över 2 ppm tyder på avrinning från gödsel eller föroreningar.</span>
+                                        <span class="tooltip-text">Kväve (ppm). Bakgrundsnivå i svenska sjöar: 0,3–1,0 ppm. Värden över 2 ppm tyder på avrinning från gödsel eller föroreningar.</span>
                                     </span>
                                 </label>
                                 <input id="form-kvave" type="number" step="0.1" class="w-full p-2 border border-slate-200 rounded-md outline-none" placeholder="0">
@@ -247,7 +239,7 @@
                                     Fosfor (ppm)
                                     <span class="info-tooltip" tabindex="0">
                                         <span class="tooltip-icon">i</span>
-                                        <span class="tooltip-text">Fosfor är den viktigaste drivkraften bakom algblomning. God vattenkvalitet: under 0,025 ppm. Över 0,1 ppm innebär hög risk för övergödning.</span>
+                                        <span class="tooltip-text">Fosfor (ppm). Den viktigaste drivkraften bakom algblomning. God vattenkvalitet: under 0,025 ppm. Över 0,1 ppm innebär hög risk för övergödning.</span>
                                     </span>
                                 </label>
                                 <input id="form-fosfor" type="number" step="0.1" class="w-full p-2 border border-slate-200 rounded-md outline-none" placeholder="0">
@@ -258,7 +250,7 @@
                                 Kolibakterier (E. coli)
                                 <span class="info-tooltip" tabindex="0">
                                     <span class="tooltip-icon">i</span>
-                                    <span class="tooltip-text">E.coli indikerar fekal förorening (bajs) från människor eller djur. Varje detekterad förekomst i badvatten är en hälsovarning – undvik bad.</span>
+                                    <span class="tooltip-text">E. coli indikerar fekal förorening från människor eller djur. Varje detekterad förekomst i badvatten är en hälsovarning – undvik bad.</span>
                                 </span>
                             </label>
                             <select id="form-ecoli" class="w-full p-2 border border-slate-200 rounded-md outline-none">
@@ -288,7 +280,7 @@
                                 Bedömd helhetsstatus
                                 <span class="info-tooltip tooltip-flip" tabindex="0">
                                     <span class="tooltip-icon">i</span>
-                                    <span class="tooltip-text">Er sammanfattande bedömning av vattenkvaliteten baserad på alla mätvärden och observationer: "Friskt" = bra kvalitet, "Dåligt" = dålig kvalitet.</span>
+                                    <span class="tooltip-text">Din samlade bedömning av vattenkvaliteten baserad på alla mätvärden och observationer. "Friskt" = bra kvalitet, "Dåligt" = dålig kvalitet.</span>
                                 </span>
                             </label>
                             <div id="status-group" class="flex rounded-lg overflow-hidden border border-slate-200 bg-slate-100">
@@ -536,7 +528,7 @@
         }
 
         function resetForm() {
-            const inputs = ['form-kod', 'form-klass', 'form-plats', 'form-temp', 'form-siktdjup', 'form-syrehalt', 'form-kvave', 'form-fosfor', 'form-obs', 'form-vaska'];
+            const inputs = ['form-kod', 'form-klass', 'form-plats', 'form-temp', 'form-syrehalt', 'form-kvave', 'form-fosfor', 'form-obs', 'form-vaska'];
             inputs.forEach(id => {
                 const el = document.getElementById(id);
                 if(el) el.value = "";
@@ -600,7 +592,6 @@
                 {id: 'form-klass', val: !!document.getElementById('form-klass').value},
                 {id: 'form-plats', val: !!document.getElementById('form-plats').value},
                 {id: 'form-temp', val: document.getElementById('form-temp').value !== ""},
-                {id: 'form-siktdjup', val: document.getElementById('form-siktdjup').value !== ""},
                 {id: 'form-grumlighet', val: document.getElementById('form-grumlighet').value !== ""},
                 {id: 'form-syrehalt', val: document.getElementById('form-syrehalt').value !== ""},
                 {id: 'form-kvave', val: document.getElementById('form-kvave').value !== ""},
@@ -650,7 +641,6 @@
             const payload = {
                 kod: kod, skola: skola, klass: klass, plats: plats, lat: currentPos[0], lng: currentPos[1],
                 temp: toSEString(document.getElementById('form-temp').value),
-                sikt: toSEString(document.getElementById('form-siktdjup').value),
                 grumlighet: toSEString(document.getElementById('form-grumlighet').value),
                 syre: toSEString(document.getElementById('form-syrehalt').value),
                 ph: toSEString(ph.toFixed(1)),
@@ -698,7 +688,6 @@
                     <div style="font-size:11px; color:#64748b; margin:4px 0">📍 ${data.plats} <span style="margin-left:4px">${data.datumStr || ''}</span></div>
                     <div style="display:grid; grid-template-columns: 1fr 1fr; font-size:11px; gap:4px; border-top:1px solid #eee; padding-top:6px">
                         <span>Temp: <b>${data.temp}°C</b></span>
-                        <span>Siktdjup: <b>${data.sikt}m</b></span>
                         <span>Grumlighet: <b>${data.grumlighet}</b></span>
                         <span>Syre: <b>${data.syre}%</b></span>
                         <span>pH: <b>${data.ph}</b></span>
