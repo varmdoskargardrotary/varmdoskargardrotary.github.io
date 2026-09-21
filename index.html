@@ -422,9 +422,15 @@
             });
         }
 
+        const TILE_URL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+        const TILE_OPTIONS = {
+            maxZoom: 19,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>-bidragsgivare'
+        };
+
         function initMaps() {
             reportMap = L.map('map-report').setView(currentPos, 13);
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png').addTo(reportMap);
+            L.tileLayer(TILE_URL, TILE_OPTIONS).addTo(reportMap);
             reportMarker = L.marker(currentPos, {draggable: true}).addTo(reportMap);
             
             reportMap.on('click', (e) => updatePosition(e.latlng.lat, e.latlng.lng));
@@ -434,7 +440,7 @@
             });
 
             exploreMap = L.map('map-explore').setView(currentPos, 11);
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png').addTo(exploreMap);
+            L.tileLayer(TILE_URL, TILE_OPTIONS).addTo(exploreMap);
         }
 
         function updatePosition(lat, lng) {
